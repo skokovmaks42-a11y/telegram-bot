@@ -58,44 +58,43 @@ def ask_ai(text):
 # ---------------- BOT ----------------
 offset = None
 
-
 def run_bot():
     global offset
-
-    print('🤖 BOT STARTED')
+    print("🤖 BOT STARTED")
 
     while True:
         try:
-            response = requests.get(
-                URL + f'/getUpdates?timeout=20&offset={offset}'
-            )
+            print("CHECKING UPDATES...")
 
-            data = response.json()
+            res = requests.get(
+                URL + f"/getUpdates?timeout=10&offset={offset}",
+                timeout=15
+            ).json()
 
-            for update in data.get('result', []):
-                offset = update['update_id'] + 1
+            print("RESPONSE:", res)
 
-                if 'message' in update:
-                    chat_id = update['message']['chat']['id']
-                    text = update['message'].get('text', '')
+            for update in res.get("result", []):
+                offset = update["update_id"] + 1
 
-                    print('MESSAGE:', text)
+                if "message" in update:
+                    chat_id = update["message"]["chat"]["id"]
+                    text = update["message"].get("text", "")
 
-                    reply = ask_ai(text)
+                    print("MESSAGE:", text)
 
                     requests.get(
-                        URL + '/sendMessage',
+                        URL + "/sendMessage",
                         params={
-                            'chat_id': chat_id,
-                            'text': reply
+                            "chat_id": chat_id,
+                            "text": text
                         }
                     )
 
             time.sleep(1)
 
         except Exception as e:
-            print('BOT ERROR:', e)
-            time.sleep(3)
+            print("ERROR:", e)
+            time.sleep(2)
 
 # ---------------- START ----------------
 threading.Thread(target=run_web).start()
